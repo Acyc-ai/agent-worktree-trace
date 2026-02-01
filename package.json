@@ -1,0 +1,148 @@
+{
+  "name": "agent-worktree-trace",
+  "displayName": "Agent Worktree Trace",
+  "description": "Tracks and highlights files changed in local git worktrees (by AI Agents) - for VSCode",
+  "version": "0.1.27",
+  "publisher": "Acycai",
+  "icon": "images/acyc-ai_worktrees.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Acyc-ai/agent-worktree-trace"
+  },
+  "engines": {
+    "vscode": "^1.87.0"
+  },
+  "categories": [
+    "Other",
+    "Visualization"
+  ],
+  "keywords": [
+    "worktree",
+    "agent",
+    "git",
+    "AI",
+    "parallel",
+    "development",
+    "highlight"
+  ],
+  "activationEvents": [
+    "workspaceContains:.git"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "Agent Worktree Trace",
+      "properties": {
+        "agentWorktreeTrace.enableFileDecorations": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show decoration (W) on files touched by agents in worktrees"
+        },
+        "agentWorktreeTrace.trackUncommittedChanges": {
+          "type": "boolean",
+          "default": true,
+          "description": "Track uncommitted worktree changes (*)"
+        },
+        "agentWorktreeTrace.showLocalEditWarning": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show warning (!) if a file has been edited locally"
+        },
+        "agentWorktreeTrace.scanIntervalSeconds": {
+          "type": "number",
+          "default": 60,
+          "minimum": 10,
+          "maximum": 600,
+          "description": "Seconds between worktree checks"
+        },
+        "agentWorktreeTrace.worktreePattern": {
+          "type": "string",
+          "default": "worktree-agent-*",
+          "description": "Glob pattern to match agent worktree directory names (* = match anything)"
+        },
+        "agentWorktreeTrace.comparisonBranch": {
+          "type": "string",
+          "default": "current",
+          "description": "Branch to compare agent worktree changes against.\nUse 'current' (default) to compare against whatever branch is checked out. Use 'main' to compare against the detected main branch, or specify any branch name (e.g., 'master', 'develop', 'feat/foobar')."
+        }
+      }
+    },
+
+    "colors": [
+      {
+        "id": "agentWorktreeTrace.touchedFile",
+        "description": "Color for files touched by agents in worktrees",
+        "defaults": {
+          "dark": "#57ba83",
+          "light": "#398b5e"
+        }
+      }
+    ],
+    "commands": [
+      {
+        "command": "agentWorktreeTrace.showMenu",
+        "title": "Show Menu",
+        "category": "Agent Worktree Trace"
+      },
+      {
+        "command": "agentWorktreeTrace.toggleScanning",
+        "title": "Toggle Scanning",
+        "category": "Agent Worktree Trace"
+      },
+      {
+        "command": "agentWorktreeTrace.openSettings",
+        "title": "Open Settings",
+        "category": "Agent Worktree Trace"
+      },
+      {
+        "command": "agentWorktreeTrace.refresh",
+        "title": "Refresh Now",
+        "category": "Agent Worktree Trace"
+      },
+      {
+        "command": "agentWorktreeTrace.clear",
+        "title": "Clear All Tracked Files",
+        "category": "Agent Worktree Trace"
+      },
+      {
+        "command": "agentWorktreeTrace.showStatus",
+        "title": "Show Tracking Status",
+        "category": "Agent Worktree Trace"
+      },
+      {
+        "command": "agentWorktreeTrace.listFiles",
+        "title": "List Touched Files",
+        "category": "Agent Worktree Trace"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "esbuild ./src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node",
+    "compile:tests": "tsc -p ./tsconfig.test.json",
+    "watch": "npm run compile -- --watch --sourcemap",
+    "pretest": "npm run compile && npm run compile:tests",
+    "test": "cross-env NODE_OPTIONS='' node ./dist/test/runTest.js",
+    "test:cli": "vscode-test",
+    "package": "vsce package",
+    "lint": "eslint src --ext ts"
+  },
+  "devDependencies": {
+    "@types/glob": "^8.1.0",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "^20.10.0",
+    "@types/sinon": "^17.0.3",
+    "@types/vscode": "^1.87.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "@vscode/test-cli": "^0.0.12",
+    "@vscode/test-electron": "^2.3.8",
+    "cross-env": "^7.0.3",
+    "esbuild": "^0.19.0",
+    "eslint": "^8.54.0",
+    "glob": "^10.3.10",
+    "mocha": "^10.2.0",
+    "sinon": "^17.0.1",
+    "typescript": "^5.3.0"
+  }
+}

@@ -1,0 +1,29 @@
+# Development files
+.vscode/**
+.claude/**
+.github/**
+.parallel-agents/**
+src/**
+node_modules/**
+
+# Config files
+.vscode-test.mjs
+.parallel-agents.json
+tsconfig.json
+tsconfig.test.json
+.eslintrc*
+eslint.config.*
+CLAUDE.md
+CONTRIBUTING.md
+
+# Build artifacts
+*.vsix
+.vscode-test/**
+dist/test/**
+
+# Git
+.git/**
+.gitignore
+
+# Misc
+**/*.map
