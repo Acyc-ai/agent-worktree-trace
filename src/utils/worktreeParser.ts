@@ -8,12 +8,12 @@ import { Worktree } from '../types';
  */
 export function parseWorktreeList(output: string, workspaceRoot: string): Worktree[] {
   const worktrees: Worktree[] = [];
-  const blocks = output.trim().split('\n\n');
+  const blocks = output.trim().split(/\r?\n\r?\n/);
 
   for (const block of blocks) {
     if (!block.trim()) continue;
 
-    const lines = block.split('\n');
+    const lines = block.split(/\r?\n/);
     let worktreePath = '';
     let branch = '';
     let isMainWorktree = false;

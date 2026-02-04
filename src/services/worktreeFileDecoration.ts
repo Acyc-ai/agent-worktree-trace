@@ -1,7 +1,7 @@
 // Worktree File Decoration Provider
 // Visual indicators on files changed by worktrees
 
-
+import * as path from 'path';
 import * as vscode from 'vscode';
 import { WorktreeFileTrackerService } from './worktreeFileTracker';
 import { generateBadge, generateTooltip, shouldDecorate } from '../utils/badgeGenerator';
@@ -74,7 +74,7 @@ export class WorktreeFileDecorationProvider implements vscode.FileDecorationProv
     if (allChangedPaths.size > 0) {
       const workspaceRoot = this.tracker.getWorkspaceRoot();
       const uris = Array.from(allChangedPaths).map(
-        relativePath => vscode.Uri.file(`${workspaceRoot}/${relativePath}`)
+        relativePath => vscode.Uri.file(path.join(workspaceRoot, relativePath))
       );
       this._onDidChangeFileDecorations.fire(uris);
     }

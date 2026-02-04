@@ -105,10 +105,10 @@ export class WorktreeFileTrackerService {
     try {
       // Try to get the default branch from git config
       const { stdout } = await execAsync(
-        'git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed "s@^refs/remotes/origin/@@"',
+        'git symbolic-ref refs/remotes/origin/HEAD',
         { cwd: this.workspaceRoot }
       );
-      const branch = stdout.trim();
+      const branch = stdout.trim().replace(/^refs\/remotes\/origin\//, '');
       if (branch) {
         return branch;
       }
@@ -147,7 +147,7 @@ export class WorktreeFileTrackerService {
   private async branchExists(branchName: string): Promise<boolean> {
     try {
       await execAsync(
-        `git rev-parse --verify ${branchName}`,
+        `git rev-parse --verify "${branchName}"`,
         { cwd: this.workspaceRoot }
       );
       return true;
@@ -225,7 +225,7 @@ export class WorktreeFileTrackerService {
     try {
       // Get committed changes: diff between comparison branch and HEAD of worktree
       const { stdout: committedDiff } = await execAsync(
-        `git diff --name-status ${comparisonBranch}...HEAD`,
+        `git diff --name-status "${comparisonBranch}"...HEAD`,
         { cwd: worktreePath }
       );
 
@@ -276,7 +276,7 @@ export class WorktreeFileTrackerService {
 
         const untrackedFiles: TrackedFile[] = untrackedOutput
           .trim()
-          .split('\n')
+          .split(/\r?\n/)
           .filter(l => l)
           .map(filePath => ({
             relativePath: filePath,
@@ -460,7 +460,7 @@ export class WorktreeFileTrackerService {
         `git diff --name-only HEAD`,
         { cwd: this.workspaceRoot }
       );
-      return new Set(stdout.trim().split('\n').filter(line => line.length > 0));
+      return new Set(stdout.trim().split(/\r?\n/).filter(line => line.length > 0));
     } catch {
       return new Set();
     }

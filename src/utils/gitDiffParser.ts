@@ -13,7 +13,7 @@ export function parseGitDiffOutput(
   uncommitted: boolean
 ): TrackedFile[] {
   const files: TrackedFile[] = [];
-  const lines = output.trim().split('\n').filter(line => line.length > 0);
+  const lines = output.trim().split(/\r?\n/).filter(line => line.length > 0);
 
   for (const line of lines) {
     // Format: "M<tab>filename" or "A<tab>filename" or "D<tab>filename"
