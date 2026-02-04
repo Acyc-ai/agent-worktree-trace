@@ -12,11 +12,11 @@ import { getChangedPaths } from '../utils/fileAggregation';
 
 const execAsync = promisify(exec);
 
-const STATE_FILE = 'touched-files.json';
+const STATE_FILE = 'changed-files.json';
 const STATE_VERSION = '1.0';
 
 /**
- * Service for tracking files touched in worktrees.
+ * Service for tracking files changed in worktrees.
  * Uses git diff to detect changes, persists state to JSON file in VS Code storage
  */
 export class WorktreeFileTrackerService {
@@ -268,11 +268,29 @@ export class WorktreeFileTrackerService {
           true
         );
 
+        // Get untracked files (others - excludes standard)
+        const { stdout: untrackedOutput } = await execAsync(
+          'git ls-files --others --exclude-standard',
+          { cwd: worktreePath }
+        );
+
+        const untrackedFiles: TrackedFile[] = untrackedOutput
+          .trim()
+          .split('\n')
+          .filter(l => l)
+          .map(filePath => ({
+            relativePath: filePath,
+            worktreeName,
+            branch,
+            changeType: 'added' as const,
+            uncommitted: true
+          }));
+
         // Merge uncommitted files, marking files that have both committed and uncommitted changes
         const committedPathsMap = new Map(allFiles.map(f => [f.relativePath, f]));
         const seenUncommittedPaths = new Set<string>();
 
-        for (const file of [...uncommittedFiles, ...stagedFiles]) {
+        for (const file of [...uncommittedFiles, ...stagedFiles, ...untrackedFiles]) {
           if (seenUncommittedPaths.has(file.relativePath)) {
             continue; // Already processed this uncommitted file
           }
@@ -362,7 +380,7 @@ export class WorktreeFileTrackerService {
   }
 
   /**
-   * Get all worktrees that have touched a specific file
+   * Get all worktrees that have changed a specific file
    */
   getWorktreesForFile(relativePath: string): TrackedFile[] {
     return this.trackedFiles.get(relativePath) || [];
@@ -383,7 +401,7 @@ export class WorktreeFileTrackerService {
   }
 
   /**
-   * Get count of unique worktrees that have touched files
+   * Get count of unique worktrees that have changed files
    */
   getActiveWorktreeCount(): number {
     const worktrees = new Set<string>();

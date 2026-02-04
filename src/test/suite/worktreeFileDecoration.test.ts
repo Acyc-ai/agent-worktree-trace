@@ -102,7 +102,7 @@ suite('WorktreeFileDecoration', () => {
 
       const tooltip = generateTooltip(worktrees, false);
 
-      assert.strictEqual(tooltip, 'Touched by: worktree-agent-1');
+      assert.strictEqual(tooltip, 'Changed by: worktree-agent-1');
     });
 
     test('lists multiple worktree names separated by commas', () => {
@@ -113,7 +113,7 @@ suite('WorktreeFileDecoration', () => {
 
       const tooltip = generateTooltip(worktrees, false);
 
-      assert.strictEqual(tooltip, 'Touched by: agent-1, agent-2');
+      assert.strictEqual(tooltip, 'Changed by: agent-1, agent-2');
     });
 
     test('adds uncommitted indicator per worktree', () => {
@@ -124,7 +124,7 @@ suite('WorktreeFileDecoration', () => {
 
       const tooltip = generateTooltip(worktrees, false);
 
-      assert.strictEqual(tooltip, 'Touched by: agent-1, agent-2 (uncommitted)');
+      assert.strictEqual(tooltip, 'Changed by: agent-1, agent-2 (uncommitted)');
     });
 
     test('adds local changes prefix when user modified', () => {
@@ -134,7 +134,7 @@ suite('WorktreeFileDecoration', () => {
 
       const tooltip = generateTooltip(worktrees, true);
 
-      assert.strictEqual(tooltip, '[!local changes] Touched by: agent-1');
+      assert.strictEqual(tooltip, '[!local changes] Changed by: agent-1');
     });
 
     test('shows committed + uncommitted status', () => {
@@ -144,7 +144,7 @@ suite('WorktreeFileDecoration', () => {
 
       const tooltip = generateTooltip(worktrees, false);
 
-      assert.strictEqual(tooltip, 'Touched by: agent-1 (committed + uncommitted)');
+      assert.strictEqual(tooltip, 'Changed by: agent-1 (committed + uncommitted)');
     });
   });
 

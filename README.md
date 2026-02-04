@@ -40,12 +40,12 @@ You can also download and install the extension .vsix from [Acyc.ai](https://acy
 
 ## Usage
 
-*When you have multiple AI agents working in parallel locally using git worktrees, this extension shows you which files they've touched directly in the VS Code's File Explorer.*
+*When you have multiple AI agents working in parallel locally using git worktrees, this extension shows you which files they've changed - directly in the VS Code's File Explorer.*
 
 
 ### File Decorations
 
-Files touched by agents get a badge in the VSCode Explorer:
+Files changed by agents get a badge in the VSCode Explorer:
 
 | Badge | Meaning |
 |-------|---------|
@@ -68,7 +68,7 @@ All commands are accessible by clicking 'Ⓐ wrktree trace' in the status bar or
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-|**Enable File Decorations**| enabled |Show decoration (W) on files touched by agents in worktrees (Enable/disable extension scanning) |
+|**Enable File Decorations**| enabled |Show decoration (W) on files chanded by agents in worktrees (Enable/disable extension scanning) |
 |**Track Uncommitted Changes**| true | Track uncommitted worktree changes (*) |
 |**Show Local Edit Warning**| true | Show warning (!) if a file has been edited locally" |
 |**Scan Interval Seconds**| 60 | Seconds between worktree checks |

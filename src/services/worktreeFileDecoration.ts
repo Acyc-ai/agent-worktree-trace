@@ -1,5 +1,5 @@
 // Worktree File Decoration Provider
-// Visual indicators on files touched by worktrees
+// Visual indicators on files changed by worktrees
 
 
 import * as vscode from 'vscode';
@@ -7,15 +7,15 @@ import { WorktreeFileTrackerService } from './worktreeFileTracker';
 import { generateBadge, generateTooltip, shouldDecorate } from '../utils/badgeGenerator';
 
 /**
- * FileDecorationProvider - shows badges on touched worktrees
+ * FileDecorationProvider - shows badges on changed worktrees
  *
  * Examples:
  * | Badge | Meaning |
  * |-------|---------|
- * | `W` | 1 agent has touched this file |
- * | `W*` | 1 agent has touched and not committed |
- * | `W3` | More than one agent has touched this file (3 in this case) |
- * | `!W` | 1 or more agents, and you, have touched this file |
+ * | `W` | 1 agent has changed this file |
+ * | `W*` | 1 agent has changed and not committed |
+ * | `W3` | More than one agent has changed this file (3 in this case) |
+ * | `!W` | 1 or more agents, and you, have changed this file |
  */
 export class WorktreeFileDecorationProvider implements vscode.FileDecorationProvider {
   private tracker: WorktreeFileTrackerService;
@@ -81,7 +81,7 @@ export class WorktreeFileDecorationProvider implements vscode.FileDecorationProv
   }
 
   /**
-   * Provide decoration for a file if it has been touched by agents
+   * Provide decoration for a file if it has been changed by agents
    */
   provideFileDecoration(
     uri: vscode.Uri,
@@ -94,7 +94,7 @@ export class WorktreeFileDecorationProvider implements vscode.FileDecorationProv
     // Get relative path from workspace
     const relativePath = vscode.workspace.asRelativePath(uri, false);
 
-    // Get worktrees that have touched this file
+    // Get worktrees that have changed this file
     const worktrees = this.tracker.getWorktreesForFile(relativePath);
 
     // Check eligibility
@@ -113,7 +113,7 @@ export class WorktreeFileDecorationProvider implements vscode.FileDecorationProv
     return new vscode.FileDecoration(
       badge,
       tooltip,
-      new vscode.ThemeColor('agentWorktreeTrace.touchedFile')
+      new vscode.ThemeColor('agentWorktreeTrace.changedFile')
     );
   }
 

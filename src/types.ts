@@ -11,7 +11,7 @@ export interface Worktree {
 }
 
 /**
- * Represents a file that has been touched by an agent in a worktree
+ * Represents a file that has been changed by an agent in a worktree
  */
 export interface TrackedFile {
   /** Path relative to workspace root */

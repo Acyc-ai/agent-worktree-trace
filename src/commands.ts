@@ -20,7 +20,7 @@ export async function showMenu(): Promise<void> {
     },
     { label: '$(refresh) Refresh Now', description: 'Scan worktrees immediately' },
     { label: '$(info) Show Status', description: 'Display tracking summary' },
-    { label: '$(list-tree) List Touched Files', description: 'Show all files in output panel' },
+    { label: '$(list-tree) List Changed Files', description: 'Show all files in output panel' },
     { label: '$(gear) Open Settings', description: 'Configure extension settings' },
     { kind: vscode.QuickPickItemKind.Separator, label: '' },
     { label: '$(trash) Clear All Tracked Files', description: 'Remove all tracking data' }
@@ -38,7 +38,7 @@ export async function showMenu(): Promise<void> {
     vscode.commands.executeCommand('agentWorktreeTrace.refresh');
   } else if (selected.label.includes('Show Status')) {
     vscode.commands.executeCommand('agentWorktreeTrace.showStatus');
-  } else if (selected.label.includes('List Touched Files')) {
+  } else if (selected.label.includes('List Changed Files')) {
     vscode.commands.executeCommand('agentWorktreeTrace.listFiles');
   } else if (selected.label.includes('Open Settings')) {
     vscode.commands.executeCommand('agentWorktreeTrace.openSettings');
@@ -83,16 +83,16 @@ export function showStatus(
   const enabled = config.get<boolean>('enableFileDecorations', true);
 
   const statusMessage = enabled
-    ? `Agent Worktree Trace: ${fileCount} files touched by ${worktreeCount} worktrees (pattern: ${pattern})`
+    ? `Agent Worktree Trace: ${fileCount} files Changed by ${worktreeCount} worktrees (pattern: ${pattern})`
     : `Agent Worktree Trace: Decorations disabled`;
 
   vscode.window.showInformationMessage(statusMessage);
 }
 
 /**
- * List all touched files grouped by worktree in an output channel
+ * List all changed files grouped by worktree in an output channel
  */
-export function listTouchedFiles(trackerService: WorktreeFileTrackerService | undefined): void {
+export function listChangedFiles(trackerService: WorktreeFileTrackerService | undefined): void {
   if (!trackerService) {
     vscode.window.showWarningMessage('Agent Worktree Trace: Extension not fully initialized');
     return;
@@ -101,7 +101,7 @@ export function listTouchedFiles(trackerService: WorktreeFileTrackerService | un
   const allFiles = trackerService.getAllTrackedFiles();
 
   if (allFiles.size === 0) {
-    vscode.window.showInformationMessage('Agent Worktree Trace: No touched files tracked');
+    vscode.window.showInformationMessage('Agent Worktree Trace: No changed files tracked');
     return;
   }
 
@@ -129,7 +129,7 @@ export function listTouchedFiles(trackerService: WorktreeFileTrackerService | un
   // Create output channel and display
   const outputChannel = vscode.window.createOutputChannel('Agent Worktree Trace');
   outputChannel.clear();
-  outputChannel.appendLine('=== Touched Files by Worktree ===\n');
+  outputChannel.appendLine('- Changed Files by Worktree -\n');
 
   for (const [worktreeName, files] of filesByWorktree) {
     outputChannel.appendLine(`${worktreeName} (${files.length} files)`);

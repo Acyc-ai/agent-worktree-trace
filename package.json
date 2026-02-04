@@ -2,7 +2,7 @@
   "name": "agent-worktree-trace",
   "displayName": "Agent Worktree Trace",
   "description": "Tracks and highlights files changed in local git worktrees (by AI Agents) - for VSCode",
-  "version": "0.1.27",
+  "version": "0.1.28",
   "publisher": "Acycai",
   "icon": "images/acyc-ai_worktrees.png",
   "repository": {
@@ -36,7 +36,7 @@
         "agentWorktreeTrace.enableFileDecorations": {
           "type": "boolean",
           "default": true,
-          "description": "Show decoration (W) on files touched by agents in worktrees"
+          "description": "Show decoration (W) on files changed by agents in worktrees"
         },
         "agentWorktreeTrace.trackUncommittedChanges": {
           "type": "boolean",
@@ -70,8 +70,8 @@
 
     "colors": [
       {
-        "id": "agentWorktreeTrace.touchedFile",
-        "description": "Color for files touched by agents in worktrees",
+        "id": "agentWorktreeTrace.changedFile",
+        "description": "Color for files changed by agents in worktrees",
         "defaults": {
           "dark": "#57ba83",
           "light": "#398b5e"
@@ -111,7 +111,7 @@
       },
       {
         "command": "agentWorktreeTrace.listFiles",
-        "title": "List Touched Files",
+        "title": "List Changed Files",
         "category": "Agent Worktree Trace"
       }
     ]

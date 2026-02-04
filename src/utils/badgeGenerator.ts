@@ -8,9 +8,9 @@ import { TrackedFile } from '../types';
  *
  * Priority (highest to lowest):
  * - "!W" = User has also modified this file (potential conflict)
- * - "WN" = N agents have touched this file (N > 1, potential merge conflicts)
- * - "W*" = 1 agent touched, has uncommitted changes
- * - "W"  = 1 agent touched, all work committed
+ * - "WN" = N agents have changed this file (N > 1, potential merge conflicts)
+ * - "W*" = 1 agent changed, has uncommitted changes
+ * - "W"  = 1 agent changed, all work committed
  */
 export function generateBadge(
   worktrees: TrackedFile[],
@@ -18,7 +18,7 @@ export function generateBadge(
 ): string | undefined {
   const count = worktrees.length;
 
-  // No agents touched - no badge
+  // No agents changed - no badge
   if (count === 0) {
     return undefined;
   }
@@ -28,7 +28,7 @@ export function generateBadge(
     return '!W';
   }
 
-  // Priority 2: Multiple agents touched (show count for merge conflict awareness)
+  // Priority 2: Multiple agents changed (show count for merge conflict awareness)
   if (count > 1) {
     return `W${count}`;
   }
@@ -61,7 +61,7 @@ export function generateTooltip(
     return `${w.worktreeName}${suffix}`;
   });
 
-  let tooltip = `Touched by: ${tooltipParts.join(', ')}`;
+  let tooltip = `Changed by: ${tooltipParts.join(', ')}`;
   if (userModified) {
     tooltip = `[!local changes] ${tooltip}`;
   }

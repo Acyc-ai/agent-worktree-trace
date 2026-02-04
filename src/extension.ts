@@ -111,7 +111,7 @@ function registerCommands(context: vscode.ExtensionContext): void {
       commands.showStatus(trackerService, discoveryService);
     }),
     vscode.commands.registerCommand('agentWorktreeTrace.listFiles', () => {
-      commands.listTouchedFiles(trackerService);
+      commands.listChangedFiles(trackerService);
     })
   );
 }
