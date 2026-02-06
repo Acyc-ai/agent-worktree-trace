@@ -4,29 +4,23 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![VS Code](https://img.shields.io/badge/VS%20Code-1.85+-blue.svg)](https://code.visualstudio.com/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
-<!-- Uncomment once publish to Code Marketplace:
-[![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/Acycai.agent-worktree-trace)](https://marketplace.visualstudio.com/items?itemName=Acycai.agent-worktree-trace)
-[![Visual Studio Marketplace Installs](https://img.shields.io/visual-studio-marketplace/i/Acycai.agent-worktree-trace)](https://marketplace.visualstudio.com/items?itemName=Acycai.agent-worktree-trace)
--->
-<p align="center">
-  <span>Tracks and highlights files changed in local git worktrees (by AI Agents) - for VSCode</span>
+
+<p align="center" >
+  <span style="font-style: italic; margin-bottom: 1.25rem;">Open VS Code. Badges appear as your agents work.</span>
+  <br /><br />
+  <span>Tracks and highlights files changed in local git worktrees (by AI Agents)</span>
+  <br />
+  <span>For VSCode</span>
 </p>
 
-<p align="center">
-  <span><em>Track agent activity</em> across multiple parallel worktrees (live)</span>
-  <br />
-  <span><em>Identify potential merge conflicts</em> before they happen</span>
-  <br />
-  <span><em>See local changes</em> that might conflict with agent work</span>
-</p>
+&nbsp;
 
-> [!TIP]
-> This is just one [Acyc.ai](https://acyc.ai) tool I use for parallel agent management.
-> 
-> If you're interested in early-access multi-agent development workflows and kicking context-switching fog, register [here](https://acyc.ai) for more.
+- Track agent activity across multiple parallel worktrees (live)
+- Identify potential merge conflicts before they happen
+- See local changes that might conflict with agent work
 
 
-### Install
+## Install
 
 Install through VS Code extensions. Search for `Agent Worktree Trace`
 
@@ -40,19 +34,18 @@ You can also download and install the extension .vsix from [Acyc.ai](https://acy
 
 ## Usage
 
-*When you have multiple AI agents working in parallel locally using git worktrees, this extension shows you which files they've changed - directly in the VS Code's File Explorer.*
-
+_When you have multiple AI agents working in parallel locally using git worktrees, this extension shows you which files they've changed - directly in the VS Code's File Explorer._
 
 ### File Decorations
 
 Files changed by agents get a badge in the VSCode Explorer:
 
-| Badge | Meaning |
-|-------|---------|
-| `W` | 1 agent has changed this file |
-| `W*` | 1 agent has changed this file, but not committed |
-| `W3` | More than one agent has changed this file (3 in this example) |
-| `!W` | 1 or more agents, and *you*, have changed this file (watch out) |
+| Badge | Meaning                                                         |
+| ----- | --------------------------------------------------------------- |
+| `W`   | 1 agent has changed this file                                   |
+| `W*`  | 1 agent has changed this file, but not committed                |
+| `W3`  | More than one agent has changed this file (3 in this example)   |
+| `!W`  | 1 or more agents, and _you_, have changed this file (watch out) |
 
 ## Commands
 
@@ -66,15 +59,14 @@ All commands are accessible by clicking 'Ⓐ wrktree trace' in the status bar or
 
 ## Config
 
-| Setting | Default | Description |
-|---------|---------|-------------|
-|**Enable File Decorations**| enabled |Show decoration (W) on files chanded by agents in worktrees (Enable/disable extension scanning) |
-|**Track Uncommitted Changes**| true | Track uncommitted worktree changes (*) |
-|**Show Local Edit Warning**| true | Show warning (!) if a file has been edited locally" |
-|**Scan Interval Seconds**| 60 | Seconds between worktree checks |
-|**Worktree Pattern**| worktree-agent-* | Glob pattern to match agent worktree directory names (* = match anything) |
-|**Comparison Branch**| current | Branch to compare agent worktree changes against. Use 'current' (default) to compare against whatever branch is checked out. Use 'main' to compare against the detected main branch, or specify any branch name (e.g., 'master', 'develop', 'feat/foobar') |
-
+| Setting                       | Default           | Description                                                                                                                                                                                                                                                |
+| ----------------------------- | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Enable File Decorations**   | enabled           | Show decoration (W) on files chanded by agents in worktrees (Enable/disable extension scanning)                                                                                                                                                            |
+| **Track Uncommitted Changes** | true              | Track uncommitted worktree changes (\*)                                                                                                                                                                                                                    |
+| **Show Local Edit Warning**   | true              | Show warning (!) if a file has been edited locally"                                                                                                                                                                                                        |
+| **Scan Interval Seconds**     | 60                | Seconds between worktree checks                                                                                                                                                                                                                            |
+| **Worktree Pattern**          | worktree-agent-\* | Glob pattern to match agent worktree directory names (\* = match anything)                                                                                                                                                                                 |
+| **Comparison Branch**         | current           | Branch to compare agent worktree changes against. Use 'current' (default) to compare against whatever branch is checked out. Use 'main' to compare against the detected main branch, or specify any branch name (e.g., 'master', 'develop', 'feat/foobar') |
 
 ## How It Works
 
@@ -82,7 +74,6 @@ All commands are accessible by clicking 'Ⓐ wrktree trace' in the status bar or
 2. For each worktree, it uses `git diff` against the branch configured (defaults to main/master)
 3. Changed files are traced and decorated in the Explorer
 4. Scans run periodically (configurable) and can be stopped/started from the status bar
-
 
 ## Usage with AI Agents
 
@@ -97,7 +88,6 @@ git worktree add ../worktree-agent-3 -b feature/task-3
 
 The extension will automatically detect these worktrees and track file changes.
 
-
 ## Customizing the Worktree Pattern
 
 If your agent worktrees follow a different naming convention than https://asyc.ai, update the pattern:
@@ -110,25 +100,26 @@ If your agent worktrees follow a different naming convention than https://asyc.a
 
 The pattern supports `*` (matches any characters) and `?` (matches single character).
 
-
 ## Development
 
-
 ### Test
-`npm test`
 
+`npm test`
 
 ### Build
 
 `npm run compile`
 `npm run package`
 
-
 ## License
 
 MIT
 
-
-## Author 
+## Author
 
 https://acyc.ai × https://github.com/hcjmartin
+
+> [!TIP]
+> This is just one [Acyc.ai](https://acyc.ai) tool I use for parallel agent management.
+>
+> If you're interested in early-access multi-agent development workflows and kicking context-switching fog, register [here](https://acyc.ai) for more.
