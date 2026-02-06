@@ -2,7 +2,7 @@
   "name": "agent-worktree-trace",
   "displayName": "Agent Worktree Trace",
   "description": "Tracks and highlights files changed in local git worktrees (by AI Agents) - for VSCode",
-  "version": "0.1.31",
+  "version": "0.1.32",
   "publisher": "Acycai",
   "icon": "images/acyc-ai_worktrees.png",
   "repository": {
