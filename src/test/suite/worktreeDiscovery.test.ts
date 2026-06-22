@@ -183,6 +183,15 @@ branch refs/heads/other
       assert.strictEqual(result[0].path, '/home/user/worktree-agent-1');
       assert.strictEqual(result[0].branch, 'feature-1');
       assert.strictEqual(result[0].isMainWorktree, false);
+
+      // git must be invoked via execFile-style argv, never a shell string
+      assert.ok(mockExec.calledOnce);
+      assert.strictEqual(mockExec.firstCall.args[0], 'git');
+      assert.deepStrictEqual(mockExec.firstCall.args[1], [
+        'worktree',
+        'list',
+        '--porcelain',
+      ]);
     });
 
     test('returns empty array on git failure', async () => {

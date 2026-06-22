@@ -1,9 +1,11 @@
 import * as assert from 'assert';
 import * as sinon from 'sinon';
 import * as vscode from 'vscode';
-import { TrackedFile } from '../../types';
+import * as os from 'os';
+import { TrackedFile, Worktree } from '../../types';
 import { parseGitDiffOutput } from '../../utils/gitDiffParser';
 import { aggregateFiles, clearWorktreeFromMap } from '../../utils/fileAggregation';
+import { WorktreeFileTrackerService } from '../../services/worktreeFileTracker';
 
 suite('WorktreeFileTracker', () => {
   let configStub: sinon.SinonStub;
@@ -182,6 +184,151 @@ A\tsrc/new2.ts
 
       assert.strictEqual(result.size, 1);
       assert.strictEqual(result.get('src/file.ts')?.length, 1);
+    });
+  });
+
+  // Regression coverage for issue #1: git must be invoked via execFile-style
+  // argv arrays, never a shell command string. A comparison branch (or any
+  // other branch name) containing shell metacharacters must be passed as a
+  // single literal argv element and must NEVER reach a shell.
+  suite('git execution hardening (no shell injection)', () => {
+    /**
+     * Build a fake execFile-style function that records every invocation and
+     * returns canned, empty git output. The recorded calls let us assert that
+     * every git argument is a literal array element.
+     */
+    function makeRecordingExec(): {
+      exec: (file: string, args: string[], options: { cwd: string }) => Promise<{ stdout: string; stderr: string }>;
+      calls: Array<{ file: string; args: string[]; cwd: string }>;
+    } {
+      const calls: Array<{ file: string; args: string[]; cwd: string }> = [];
+      const exec = async (file: string, args: string[], options: { cwd: string }) => {
+        calls.push({ file, args, cwd: options.cwd });
+        // rev-parse --verify is used to validate the branch exists; succeed so
+        // scanning proceeds and the diff command is exercised.
+        return { stdout: '', stderr: '' };
+      };
+      return { exec, calls };
+    }
+
+    function stubComparisonBranch(branch: string): void {
+      configStub.restore();
+      configStub = sinon.stub(vscode.workspace, 'getConfiguration');
+      configStub.returns({
+        get: (key: string, defaultValue: unknown) => {
+          if (key === 'enableFileDecorations') return true;
+          if (key === 'trackUncommittedChanges') return false;
+          if (key === 'comparisonBranch') return branch;
+          return defaultValue;
+        }
+      } as unknown as vscode.WorkspaceConfiguration);
+    }
+
+    const maliciousBranches = [
+      'foo;rm -rf x',
+      '$(touch pwned)',
+      '`touch pwned`',
+      'foo"; echo hi; "bar',
+      "foo' || true; '"
+    ];
+
+    for (const malicious of maliciousBranches) {
+      test(`passes branch "${malicious}" as a literal argv element`, async () => {
+        stubComparisonBranch(malicious);
+        const { exec, calls } = makeRecordingExec();
+
+        const tracker = new WorktreeFileTrackerService(
+          '/tmp/repo',
+          os.tmpdir(),
+          exec
+        );
+
+        const worktrees: Worktree[] = [
+          { path: '/tmp/repo/worktree-agent-1', branch: 'feature/x', isMainWorktree: false }
+        ];
+
+        await tracker.scanAllWorktrees(worktrees);
+
+        // Every git call must be invoked as ("git", [args...]) — never as a
+        // single shell string. Args must never be concatenated together.
+        for (const call of calls) {
+          assert.strictEqual(call.file, 'git', 'git must be the executable, not a shell');
+          assert.ok(Array.isArray(call.args), 'args must be an array');
+          // No single arg should contain the whole command glued together.
+          assert.ok(
+            !call.args.some(a => a.includes(' git ')),
+            'arguments must not contain a concatenated shell command'
+          );
+        }
+
+        // The branch must be validated literally via rev-parse --verify <branch>.
+        const verifyCall = calls.find(
+          c => c.args[0] === 'rev-parse' && c.args.includes('--verify')
+        );
+        assert.ok(verifyCall, 'expected a rev-parse --verify call');
+        assert.strictEqual(
+          verifyCall!.args[verifyCall!.args.length - 1],
+          malicious,
+          'branch name must be passed verbatim as its own argv element (no quoting, no shell)'
+        );
+
+        // The diff must reference the branch via a literal `<branch>...HEAD`
+        // argv element — not interpolated into a quoted shell string.
+        const diffCall = calls.find(
+          c => c.args[0] === 'diff' && c.args.some(a => a.endsWith('...HEAD'))
+        );
+        assert.ok(diffCall, 'expected a git diff ...HEAD call');
+        assert.ok(
+          diffCall!.args.includes(`${malicious}...HEAD`),
+          'diff range must contain the branch name verbatim with no surrounding quotes'
+        );
+        // Guard against the old quoted form sneaking back in: the range must
+        // never be wrapped in literal shell quotes (e.g. `"<branch>...HEAD"`).
+        // Note: a quote character that is part of the branch name itself is
+        // fine — passing it verbatim as argv data is exactly the safe behaviour.
+        assert.ok(
+          !diffCall!.args.includes(`"${malicious}...HEAD"`),
+          'diff range must not be wrapped in shell quote characters'
+        );
+      });
+    }
+
+    test('resolves the comparison branch exactly once per scan pass', async () => {
+      // Use an explicit branch name (not 'current'/'main') so resolution is a
+      // single rev-parse --verify, isolating the "once per pass" guarantee.
+      stubComparisonBranch('develop');
+      const { exec, calls } = makeRecordingExec();
+
+      const tracker = new WorktreeFileTrackerService(
+        '/tmp/repo',
+        os.tmpdir(),
+        exec
+      );
+
+      const worktrees: Worktree[] = [
+        { path: '/tmp/repo/worktree-agent-1', branch: 'feature/a', isMainWorktree: false },
+        { path: '/tmp/repo/worktree-agent-2', branch: 'feature/b', isMainWorktree: false },
+        { path: '/tmp/repo/worktree-agent-3', branch: 'feature/c', isMainWorktree: false }
+      ];
+
+      await tracker.scanAllWorktrees(worktrees);
+
+      // Branch validation (rev-parse --verify) must happen once total, not once
+      // per worktree, even though three worktrees were scanned.
+      const verifyCalls = calls.filter(
+        c => c.args[0] === 'rev-parse' && c.args.includes('--verify')
+      );
+      assert.strictEqual(
+        verifyCalls.length,
+        1,
+        'comparison branch should be resolved/validated exactly once per pass'
+      );
+
+      // ...yet a diff should still run for each of the three worktrees.
+      const diffCalls = calls.filter(
+        c => c.args[0] === 'diff' && c.args.some(a => a.endsWith('...HEAD'))
+      );
+      assert.strictEqual(diffCalls.length, 3, 'each worktree should be diffed');
     });
   });
 });

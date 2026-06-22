@@ -103,8 +103,8 @@ function registerCommands(context: vscode.ExtensionContext): void {
       await scanWorktrees();
       vscode.window.showInformationMessage('Agent Worktree Trace: Refreshed file tracking');
     }),
-    vscode.commands.registerCommand('agentWorktreeTrace.clear', () => {
-      trackerService?.clearAllFiles();
+    vscode.commands.registerCommand('agentWorktreeTrace.clear', async () => {
+      await trackerService?.clearAllFiles();
       vscode.window.showInformationMessage('Agent Worktree Trace: Cleared all tracked files');
     }),
     vscode.commands.registerCommand('agentWorktreeTrace.showStatus', () => {
