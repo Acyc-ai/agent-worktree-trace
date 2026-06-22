@@ -8,7 +8,7 @@ import { execFile } from 'child_process';
 import { promisify } from 'util';
 import { Worktree, TrackedFile, TrackedFilesState } from '../types';
 import { parseGitDiffOutput } from '../utils/gitDiffParser';
-import { getChangedPaths } from '../utils/fileAggregation';
+import { aggregateFiles, clearWorktreeFromMap, getChangedPaths } from '../utils/fileAggregation';
 
 const execFileAsync = promisify(execFile);
 
@@ -387,9 +387,9 @@ export class WorktreeFileTrackerService {
     // Filter to only non-main worktrees
     const agentWorktrees = worktrees.filter(wt => !wt.isMainWorktree);
 
-    // Build new tracked files map
-    const newTrackedFiles = new Map<string, TrackedFile[]>();
-
+    // Scan each worktree, then aggregate the per-worktree results into a single
+    // map keyed by relative path (shared util keeps dedup/precedence identical).
+    const fileGroups: TrackedFile[][] = [];
     for (const worktree of agentWorktrees) {
       const worktreeName = path.basename(worktree.path);
       const files = await this.scanWorktree(
@@ -398,28 +398,10 @@ export class WorktreeFileTrackerService {
         worktree.branch,
         comparisonBranch
       );
-
-      // Group files by relative path
-      for (const file of files) {
-        const existing = newTrackedFiles.get(file.relativePath) || [];
-
-        // Check if we already have an entry for this worktree
-        const existingIndex = existing.findIndex(
-          f => f.worktreeName === file.worktreeName
-        );
-
-        if (existingIndex >= 0) {
-          // Update existing entry (prefer committed over uncommitted)
-          if (!file.uncommitted) {
-            existing[existingIndex] = file;
-          }
-        } else {
-          existing.push(file);
-        }
-
-        newTrackedFiles.set(file.relativePath, existing);
-      }
+      fileGroups.push(files);
     }
+
+    const newTrackedFiles = aggregateFiles(fileGroups);
 
     // Determine which files actually changed
     const changedPaths = getChangedPaths(this.trackedFiles, newTrackedFiles);
@@ -472,20 +454,13 @@ export class WorktreeFileTrackerService {
    * Clear tracked files for a specific worktree
    */
   async clearWorktreeFiles(worktreeName: string): Promise<void> {
-    const changedPaths = new Set<string>();
+    // Remove entries for this worktree via the shared util, then diff the old
+    // and new maps to find which paths actually changed (so we only notify for
+    // those, matching the previous inline behaviour).
+    const updated = clearWorktreeFromMap(this.trackedFiles, worktreeName);
+    const changedPaths = getChangedPaths(this.trackedFiles, updated);
 
-    // Remove entries for this worktree from all files
-    for (const [relativePath, files] of this.trackedFiles.entries()) {
-      const filtered = files.filter(f => f.worktreeName !== worktreeName);
-
-      if (filtered.length === 0) {
-        this.trackedFiles.delete(relativePath);
-        changedPaths.add(relativePath);
-      } else if (filtered.length !== files.length) {
-        this.trackedFiles.set(relativePath, filtered);
-        changedPaths.add(relativePath);
-      }
-    }
+    this.trackedFiles = updated;
 
     // Save and notify
     await this.saveState();
