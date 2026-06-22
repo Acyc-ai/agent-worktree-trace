@@ -60,6 +60,53 @@ suite('WorktreeFileTracker', () => {
       assert.strictEqual(result[0].changeType, 'modified');
     });
 
+    test('parses renamed entries with score and two paths, using destination path', () => {
+      const output = 'R100\tsrc/old.ts\tsrc/new.ts\n';
+      const result = parseGitDiffOutput(output, 'worktree-agent-1', 'feature/test', false);
+
+      assert.strictEqual(result.length, 1);
+      assert.strictEqual(result[0].relativePath, 'src/new.ts');
+      assert.strictEqual(result[0].changeType, 'modified');
+    });
+
+    test('parses copied entries with score and two paths, using destination path', () => {
+      const output = 'C75\tsrc/old.ts\tsrc/copy.ts\n';
+      const result = parseGitDiffOutput(output, 'worktree-agent-1', 'feature/test', false);
+
+      assert.strictEqual(result.length, 1);
+      assert.strictEqual(result[0].relativePath, 'src/copy.ts');
+      assert.strictEqual(result[0].changeType, 'modified');
+    });
+
+    test('parses rename/copy destination paths containing spaces', () => {
+      const output = 'R96\told name.ts\tnew name.ts\n';
+      const result = parseGitDiffOutput(output, 'worktree-agent-1', 'feature/test', false);
+
+      assert.strictEqual(result.length, 1);
+      assert.strictEqual(result[0].relativePath, 'new name.ts');
+      assert.strictEqual(result[0].changeType, 'modified');
+    });
+
+    test('parses mixed A/M/D and rename/copy output together', () => {
+      const output = [
+        'A\tsrc/new.ts',
+        'M\tsrc/changed.ts',
+        'D\tsrc/removed.ts',
+        'R100\tsrc/from.ts\tsrc/to.ts',
+        'C50\tsrc/src.ts\tsrc/dest.ts'
+      ].join('\n') + '\n';
+      const result = parseGitDiffOutput(output, 'worktree-agent-1', 'feature/test', false);
+
+      assert.strictEqual(result.length, 5);
+      assert.strictEqual(result[0].changeType, 'added');
+      assert.strictEqual(result[1].changeType, 'modified');
+      assert.strictEqual(result[2].changeType, 'deleted');
+      assert.strictEqual(result[3].relativePath, 'src/to.ts');
+      assert.strictEqual(result[3].changeType, 'modified');
+      assert.strictEqual(result[4].relativePath, 'src/dest.ts');
+      assert.strictEqual(result[4].changeType, 'modified');
+    });
+
     test('parses multiple files correctly', () => {
       const output = `A\tsrc/new1.ts
 M\tsrc/changed.ts
