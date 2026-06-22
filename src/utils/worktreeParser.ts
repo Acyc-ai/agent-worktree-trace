@@ -46,12 +46,21 @@ export function parseWorktreeList(output: string, workspaceRoot: string): Worktr
 }
 
 /**
- * Convert a glob pattern to a RegExp
+ * Convert a glob pattern to a RegExp.
+ *
+ * Regex metacharacters in the literal portions of the glob (e.g. `.`, `+`,
+ * `(`, `)`, `[`, `]`, `{`, `}`, `^`, `$`, `|`, `\`) are escaped so they are
+ * matched literally. Only the glob wildcards `*` and `?` retain their special
+ * meaning, mapping to `.*` and `.` respectively.
  */
 export function globToRegex(pattern: string): RegExp {
+  // Escape every regex metacharacter, then re-enable the glob wildcards.
+  // `*` and `?` are escaped to `\*` and `\?` by the first step, so we target
+  // those escaped sequences when translating to regex wildcards.
   const regexPattern = pattern
-    .replace(/\*/g, '.*')
-    .replace(/\?/g, '.');
+    .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    .replace(/\\\*/g, '.*')
+    .replace(/\\\?/g, '.');
   return new RegExp(`^${regexPattern}$`);
 }
 
