@@ -1,0 +1,8 @@
+{
+  "all": true,
+  "include": ["dist/utils/**/*.js"],
+  "exclude": ["**/*.d.ts", "**/*.test.js", "dist/test/**"],
+  "excludeNodeModules": true,
+  "reporter": ["text", "lcov"],
+  "report-dir": "coverage"
+}

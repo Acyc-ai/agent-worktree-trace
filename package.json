@@ -123,6 +123,9 @@
     "pretest": "npm run compile && npm run compile:tests",
     "test": "cross-env NODE_OPTIONS='' node ./dist/test/runTest.js",
     "test:cli": "vscode-test",
+    "pretest:unit": "npm run compile:tests",
+    "test:unit": "mocha --config .mocharc.unit.json",
+    "coverage:unit": "npm run compile:tests && c8 mocha --config .mocharc.unit.json",
     "package": "vsce package",
     "lint": "eslint src --ext ts"
   },
@@ -136,6 +139,7 @@
     "@typescript-eslint/parser": "^6.13.0",
     "@vscode/test-cli": "^0.0.12",
     "@vscode/test-electron": "^2.3.8",
+    "c8": "^9.1.0",
     "cross-env": "^7.0.3",
     "esbuild": "^0.19.0",
     "eslint": "^8.54.0",
