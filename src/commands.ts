@@ -7,6 +7,30 @@ import { WorktreeDiscoveryService } from './services/worktreeDiscovery';
 import { WorktreeFileTrackerService } from './services/worktreeFileTracker';
 
 /**
+ * Single reusable output channel for the extension.
+ *
+ * Created lazily on first use and reused across invocations to avoid leaking
+ * a new output channel every time a command runs. Disposed via
+ * `disposeOutputChannel` on extension deactivation.
+ */
+let outputChannel: vscode.OutputChannel | undefined;
+
+function getOutputChannel(): vscode.OutputChannel {
+  if (!outputChannel) {
+    outputChannel = vscode.window.createOutputChannel('Agent Worktree Trace');
+  }
+  return outputChannel;
+}
+
+/**
+ * Dispose the shared output channel (called on deactivation).
+ */
+export function disposeOutputChannel(): void {
+  outputChannel?.dispose();
+  outputChannel = undefined;
+}
+
+/**
  * Show the quick pick menu for the status bar
  */
 export async function showMenu(): Promise<void> {
@@ -126,8 +150,8 @@ export function listChangedFiles(trackerService: WorktreeFileTrackerService | un
     }
   }
 
-  // Create output channel and display
-  const outputChannel = vscode.window.createOutputChannel('Agent Worktree Trace');
+  // Reuse the shared output channel and display
+  const outputChannel = getOutputChannel();
   outputChannel.clear();
   outputChannel.appendLine('- Changed Files by Worktree -\n');
 

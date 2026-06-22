@@ -80,6 +80,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       decorationProvider?.dispose();
       decorationProvider = undefined;
       statusBarService = undefined;
+      commands.disposeOutputChannel();
     }
   });
 
