@@ -47,37 +47,25 @@ export class WorktreeFileDecorationProvider implements vscode.FileDecorationProv
     const oldUserModified = this.userModifiedFiles;
     this.userModifiedFiles = await this.tracker.getUserModifiedFiles();
 
-    // Find paths where user-modified status changed
-    // TODO: This can be simplified, it's a Set...
-    const userModifiedChanged = new Set<string>();
-    for (const path of this.userModifiedFiles) {
-      if (!oldUserModified.has(path)) {
-        userModifiedChanged.add(path);
-      }
-    }
-    for (const path of oldUserModified) {
-      if (!this.userModifiedFiles.has(path)) {
-        userModifiedChanged.add(path);
-      }
-    }
+    // Paths whose user-modified status flipped (added or removed) are exactly
+    // the symmetric difference of the old and new sets.
+    const userModifiedChanged = symmetricDifference(oldUserModified, this.userModifiedFiles);
 
-    // Combine tracker changes with user-modified changes
+    // Combine tracker changes with user-modified changes.
     const allChangedPaths = new Set([...changedPaths, ...userModifiedChanged]);
 
-    // If no specific changes, this is initial load - refresh all
-    if (allChangedPaths.size === 0 && changedPaths.size === 0) {
+    // Nothing changed (e.g. the initial load) - refresh all decorations.
+    if (allChangedPaths.size === 0) {
       this._onDidChangeFileDecorations.fire(undefined);
       return;
     }
 
-    // Only fire for specific URIs that changed
-    if (allChangedPaths.size > 0) {
-      const workspaceRoot = this.tracker.getWorkspaceRoot();
-      const uris = Array.from(allChangedPaths).map(
-        relativePath => vscode.Uri.file(path.join(workspaceRoot, relativePath))
-      );
-      this._onDidChangeFileDecorations.fire(uris);
-    }
+    // Fire only for the specific URIs whose decoration state changed.
+    const workspaceRoot = this.tracker.getWorkspaceRoot();
+    const uris = Array.from(allChangedPaths).map(
+      relativePath => vscode.Uri.file(path.join(workspaceRoot, relativePath))
+    );
+    this._onDidChangeFileDecorations.fire(uris);
   }
 
   /**
@@ -139,4 +127,23 @@ export function createWorktreeFileDecorationProvider(
   tracker: WorktreeFileTrackerService
 ): WorktreeFileDecorationProvider {
   return new WorktreeFileDecorationProvider(tracker);
+}
+
+/**
+ * Return the symmetric difference of two sets: every element present in
+ * exactly one of `a` or `b` (i.e. added or removed between the two).
+ */
+function symmetricDifference<T>(a: Set<T>, b: Set<T>): Set<T> {
+  const result = new Set<T>();
+  for (const value of a) {
+    if (!b.has(value)) {
+      result.add(value);
+    }
+  }
+  for (const value of b) {
+    if (!a.has(value)) {
+      result.add(value);
+    }
+  }
+  return result;
 }
