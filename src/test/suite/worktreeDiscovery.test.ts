@@ -104,6 +104,50 @@ detached
       assert.ok(regex.test('agent-a'));
       assert.ok(!regex.test('agent-12'));
     });
+
+    test('treats . as a literal dot, not regex any-char', () => {
+      const regex = globToRegex('agent.work');
+      assert.ok(regex.test('agent.work'));
+      assert.ok(!regex.test('agentXwork'));
+    });
+
+    test('escapes other regex metacharacters literally', () => {
+      // + should match a literal plus, not "one or more"
+      const plusRegex = globToRegex('agent+work');
+      assert.ok(plusRegex.test('agent+work'));
+      assert.ok(!plusRegex.test('agentwork'));
+      assert.ok(!plusRegex.test('agenttwork'));
+
+      // Parentheses are literal
+      const parenRegex = globToRegex('agent(1)');
+      assert.ok(parenRegex.test('agent(1)'));
+      assert.ok(!parenRegex.test('agent1'));
+
+      // Square brackets are literal, not a character class
+      const bracketRegex = globToRegex('agent[ab]');
+      assert.ok(bracketRegex.test('agent[ab]'));
+      assert.ok(!bracketRegex.test('agenta'));
+      assert.ok(!bracketRegex.test('agentb'));
+
+      // Anchors and alternation are literal
+      const anchorRegex = globToRegex('a^b$c|d');
+      assert.ok(anchorRegex.test('a^b$c|d'));
+      assert.ok(!anchorRegex.test('ac'));
+    });
+
+    test('preserves wildcard behaviour alongside escaped literals', () => {
+      // Standard pattern with a literal hyphen still works
+      const standard = globToRegex('worktree-agent-*');
+      assert.ok(standard.test('worktree-agent-3'));
+      assert.ok(standard.test('worktree-agent-foo'));
+      assert.ok(!standard.test('other-agent-3'));
+
+      // Mix of literal dot and wildcards
+      const mixed = globToRegex('agent.v?-*');
+      assert.ok(mixed.test('agent.v1-feature'));
+      assert.ok(!mixed.test('agentXv1-feature'));
+      assert.ok(!mixed.test('agent.v12-feature'));
+    });
   });
 
   suite('filterWorktreesByPattern', () => {
