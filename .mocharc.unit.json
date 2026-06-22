@@ -1,0 +1,6 @@
+{
+  "spec": "dist/test/unit/**/*.test.js",
+  "ui": "bdd",
+  "timeout": 5000,
+  "color": true
+}
