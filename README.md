@@ -59,19 +59,19 @@ All commands are accessible by clicking 'Ⓐ wrktree trace' in the status bar or
 
 ## Config
 
-| Setting                       | Default           | Description                                                                                                                                                                                                                                                |
-| ----------------------------- | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Enable File Decorations**   | enabled           | Show decoration (W) on files chanded by agents in worktrees (Enable/disable extension scanning)                                                                                                                                                            |
-| **Track Uncommitted Changes** | true              | Track uncommitted worktree changes (\*)                                                                                                                                                                                                                    |
-| **Show Local Edit Warning**   | true              | Show warning (!) if a file has been edited locally"                                                                                                                                                                                                        |
-| **Scan Interval Seconds**     | 60                | Seconds between worktree checks                                                                                                                                                                                                                            |
-| **Worktree Pattern**          | worktree-agent-\* | Glob pattern to match agent worktree directory names (\* = match anything)                                                                                                                                                                                 |
-| **Comparison Branch**         | current           | Branch to compare agent worktree changes against. Use 'current' (default) to compare against whatever branch is checked out. Use 'main' to compare against the detected main branch, or specify any branch name (e.g., 'master', 'develop', 'feat/foobar') |
+| Setting                       | Default           | Description                                                                                                                                                                                                                                                           |
+| ----------------------------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Enable File Decorations**   | true              | Show a `W` badge on files changed in agent worktrees.                                                                                                                                                                                                                 |
+| **Track Uncommitted Changes** | true              | Include uncommitted changes in agent worktrees (`W*`).                                                                                                                                                                                                               |
+| **Show Local Edit Warning**   | true              | Show `!` when both you and an agent have changed a file.                                                                                                                                                                                                              |
+| **Scan Interval Seconds**     | 60                | Seconds between worktree scans (minimum 10, maximum 600).                                                                                                                                                                                                            |
+| **Worktree Pattern**          | `worktree-agent-*` | Glob pattern for agent worktree directory names (`*` matches any characters; `?` matches one character).                                                                                                                                                            |
+| **Comparison Branch**         | `current`         | Branch to compare agent worktree changes against. `current` (default) uses the currently checked-out branch; `main` uses the detected `main` or `master` branch; any other value names a specific branch. |
 
 ## How It Works
 
 1. The extension discovers git worktrees matching your configured pattern
-2. For each worktree, it uses `git diff` against the branch configured (defaults to main/master)
+2. For each worktree, it uses `git diff` against the configured comparison branch (defaults to the currently checked-out branch)
 3. Changed files are traced and decorated in the Explorer
 4. Scans run periodically (configurable) and can be stopped/started from the status bar
 
@@ -90,7 +90,7 @@ The extension will automatically detect these worktrees and track file changes.
 
 ## Customizing the Worktree Pattern
 
-If your agent worktrees follow a different naming convention than https://asyc.ai, update the pattern:
+If your agent worktrees follow a different naming convention than `worktree-agent-*`, update the pattern:
 
 ```json
 {
